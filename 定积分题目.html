@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>定积分计算 - Quiz Master</title>
+  <!-- 引入外部资源 -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+  <!-- 数学公式渲染库 -->
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  
+  <!-- Tailwind CSS 配置 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#165DFF',
+            secondary: '#36CFC9',
+            accent: '#FF7D00',
+            danger: '#F53F3F',
+            success: '#00B42A',
+            dark: '#1D2129',
+            light: '#F2F3F5'
+          },
+          fontFamily: {
+            inter: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  
+  <!-- 自定义工具类 -->
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .card-shadow {
+        box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.1);
+      }
+      .hover-lift {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+      .hover-lift:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.15);
+      }
+      .gradient-bg {
+        background: linear-gradient(135deg, #165DFF 0%, #36CFC9 100%);
+      }
+    }
+  </style>
+  
+  <style>
+    /* 基础动画定义 */
+    .fade-in {
+      animation: fadeIn 0.5s ease-in-out;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .progress-bar {
+      transition: width 0.5s ease-in-out;
+    }
+    
+    /* 滚动条美化 */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+      background: #c1c1c1;
+      border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+      background: #a1a1a1;
+    }
+
+    /* 数学公式显示优化 */
+    .math-formula {
+      font-family: 'Times New Roman', serif;
+      line-height: 1.8;
+    }
+    
+    /* 步骤条样式 */
+    .step-active {
+      border-color: #165DFF;
+      background-color: #165DFF;
+      color: white;
+    }
+    
+    .step-completed {
+      border-color: #00B42A;
+      background-color: #00B42A;
+      color: white;
+    }
+    
+    .step-pending {
+      border-color: #E5E7EB;
+      background-color: white;
+      color: #9CA3AF;
+    }
+  </style>
+</head>
+<body class="font-inter bg-gray-50 text-dark min-h-screen flex flex-col">
+  <!-- 导航栏 -->
+  <header id="navbar" class="fixed w-full top-0 z-50 transition-all duration-300 bg-white/90 backdrop-blur-sm shadow-sm">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
+        <!-- Logo -->
+        <div class="flex items-center">
+          <a href="#" class="flex items-center space-x-2">
+            <div class="w-10 h-10 rounded-lg gradient-bg flex items-center justify-center">
+              <i class="fa fa-calculator text-white text-xl"></i>
+            </div>
+            <span class="text-xl font-bold text-primary">MathMaster</span>
+          </a>
+        </div>
+        
+        <!-- 导航链接 - 桌面版 -->
+        <nav class="hidden md:flex space-x-8">
+          <a href="#" class="text-dark hover:text-primary font-medium transition-colors">仪表盘</a>
+          <a href="#" class="text-primary border-b-2 border-primary font-medium">题库</a>
+          <a href="#" class="text-dark hover:text-primary font-medium transition-colors">错题集</a>
+          <a href="#" class="text-dark hover:text-primary font-medium transition-colors">AI推荐</a>
+        </nav>
+        
+        <!-- 用户区域 -->
+        <div class="flex items-center space-x-4">
+          <button class="hidden sm:flex items-center justify-center w-10 h-10 rounded-full bg-light text-dark hover:bg-gray-200 transition-colors">
+            <i class="fa fa-bell-o"></i>
+          </button>
+          <div class="relative group">
+            <button class="flex items-center space-x-2 focus:outline-none">
+              <img src="https://picsum.photos/id/64/200" alt="用户头像" class="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm">
+              <span class="hidden sm:inline font-medium">张同学</span>
+              <i class="fa fa-angle-down text-gray-500"></i>
+            </button>
+            <!-- 用户下拉菜单 -->
+            <div class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-right scale-95 group-hover:scale-100">
+              <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-light">
+                <i class="fa fa-user-o mr-2"></i>个人资料
+              </a>
+              <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-light">
+                <i class="fa fa-cog mr-2"></i>设置
+              </a>
+              <div class="border-t border-gray-100 my-1"></div>
+              <a href="#" class="block px-4 py-2 text-sm text-danger hover:bg-light">
+                <i class="fa fa-sign-out mr-2"></i>退出登录
+              </a>
+            </div>
+          </div>
+          
+          <!-- 移动端菜单按钮 -->
+          <button id="mobile-menu-button" class="md:hidden flex items-center justify-center w-10 h-10 rounded-lg bg-light text-dark">
+            <i class="fa fa-bars"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 移动端导航菜单 -->
+    <div id="mobile-menu" class="md:hidden hidden bg-white border-t">
+      <div class="container mx-auto px-4 py-3 space-y-2">
+        <a href="#" class="block py-2 text-dark hover:text-primary">仪表盘</a>
+        <a href="#" class="block py-2 text-primary font-medium">题库</a>
+        <a href="#" class="block py-2 text-dark hover:text-primary">错题集</a>
+        <a href="#" class="block py-2 text-dark hover:text-primary">AI推荐</a>
+      </div>
+    </div>
+  </header>
+  
+  <!-- 主内容区 -->
+  <main class="flex-grow pt-16">
+    <!-- 路径导航 -->
+    <section class="bg-white border-b">
+      <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div class="text-sm text-gray-500">
+          <a href="#" class="hover:text-primary">题库</a> 
+          <i class="fa fa-angle-right mx-2 text-gray-300"></i> 
+          <a href="#" class="hover:text-primary">微积分</a> 
+          <i class="fa fa-angle-right mx-2 text-gray-300"></i> 
+          <span class="text-gray-700">定积分计算</span>
+        </div>
+      </div>
+    </section>
+    
+    <!-- 主要内容 -->
+    <section class="py-8">
+      <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <!-- 左侧：题目和解答区 -->
+          <div class="lg:col-span-2 space-y-6">
+            <!-- 题目卡片 -->
+            <div class="bg-white rounded-xl shadow-sm p-6 hover-lift">
+              <div class="flex justify-between items-start mb-4">
+                <div>
+                  <h1 class="text-2xl font-bold mb-3">定积分计算</h1>
+                  <div class="flex items-center space-x-3 mb-4">
+                    <span class="px-3 py-1 bg-danger/10 text-danger text-sm rounded-full font-medium">困难</span>
+                    <span class="text-gray-500 text-sm"><i class="fa fa-clock-o mr-1"></i> 建议用时: 15分钟</span>
+                  </div>
+                </div>
+                <div class="flex space-x-2">
+                  <button class="p-2 rounded-lg bg-light text-gray-600 hover:bg-gray-200 transition-colors" title="收藏题目">
+                    <i class="fa fa-star-o"></i>
+                  </button>
+                  <button class="p-2 rounded-lg bg-light text-gray-600 hover:bg-gray-200 transition-colors" title="分享题目">
+                    <i class="fa fa-share-alt"></i>
+                  </button>
+                </div>
+              </div>
+              
+              <div class="border-b border-gray-100 pb-6 mb-6">
+                <p class="text-lg mb-4 math-formula">计算定积分：\(\int_{0}^{1} (2x + e^x) dx\)，要求写出详细的积分步骤，并说明所用的积分公式。</p>
+                
+                <div class="bg-light rounded-lg p-4">
+                  <h3 class="font-medium mb-2 flex items-center">
+                    <i class="fa fa-info-circle text-primary mr-2"></i> 题目提示
+                  </h3>
+                  <ul class="list-disc pl-5 text-gray-600 space-y-1">
+                    <li>使用基本积分公式：\(\int x^n dx = \frac{x^{n+1}}{n+1} + C\)（\(n \neq -1\)）</li>
+                    <li>指数函数积分公式：\(\int e^x dx = e^x + C\)</li>
+                    <li>定积分性质：\(\int_{a}^{b} [f(x) + g(x)] dx = \int_{a}^{b} f(x) dx + \int_{a}^{b} g(x) dx\)</li>
+                  </ul>
+                </div>
+              </div>
+              
+              <!-- 解答步骤 -->
+              <div>
+                <h2 class="text-xl font-bold mb-4">解答步骤</h2>
+                
+                <!-- 步骤指示器 -->
+                <div class="flex items-center justify-between mb-6 relative">
+                  <div class="absolute top-1/2 left-0 right-0 h-0.5 bg-gray-200 -z-10"></div>
+                  <div class="absolute top-1/2 left-0 h-0.5 bg-primary transition-all duration-500" style="width: 0%; -z-10"></div>
+                  
+                  <div class="flex flex-col items-center">
+                    <div class="w-8 h-8 rounded-full border-2 step-active flex items-center justify-center mb-1">1</div>
+                    <span class="text-xs text-center">拆分积分</span>
+                  </div>
+                  
+                  <div class="flex flex-col items-center">
+                    <div class="w-8 h-8 rounded-full border-2 step-pending flex items-center justify-center mb-1">2</div>
+                    <span class="text-xs text-center">计算原函数</span>
+                  </div>
+                  
+                  <div class="flex flex-col items-center">
+                    <div class="w-8 h-8 rounded-full border-2 step-pending flex items-center justify-center mb-1">3</div>
+                    <span class="text-xs text-center">代入上下限</span>
+                  </div>
+                  
+                  <div class="flex flex-col items-center">
+                    <div class="w-8 h-8 rounded-full border-2 step-pending flex items-center justify-center mb-1">4</div>
+                    <span class="text-xs text-center">得出结果</span>
+                  </div>
+                </div>
+                
+                <!-- 步骤输入区 -->
+                <div class="space-y-6">
+                  <!-- 步骤1 -->
+                  <div class="fade-in">
+                    <div class="flex items-center mb-3">
+                      <span class="w-6 h-6 rounded-full bg-primary text-white text-sm flex items-center justify-center mr-2">1</span>
+                      <h3 class="font-medium">拆分积分表达式</h3>
+                    </div>
+                    <p class="text-gray-500 text-sm mb-3">根据定积分的线性性质，将被积函数拆分为两个部分：</p>
+                    <div class="bg-light rounded-lg p-4 mb-3">
+                      <p class="math-formula">\(\int_{0}^{1} (2x + e^x) dx = \int_{0}^{1} 2x dx + \int_{0}^{1} e^x dx\)</p>
+                    </div>
+                    <div class="flex space-x-3">
+                      <button class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors" id="step1-confirm">
+                        确认步骤
+                      </button>
+                      <button class="px-4 py-2 bg-light text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
+                        提示
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <!-- 步骤2 (默认隐藏) -->
+                  <div class="fade-in hidden" id="step2">
+                    <div class="flex items-center mb-3">
+                      <span class="w-6 h-6 rounded-full bg-primary text-white text-sm flex items-center justify-center mr-2">2</span>
+                      <h3 class="font-medium">分别计算原函数</h3>
+                    </div>
+                    <p class="text-gray-500 text-sm mb-3">根据基本积分公式，计算两个部分的原函数：</p>
+                    <div class="bg-light rounded-lg p-4 mb-3">
+                      <p class="math-formula mb-2">\(\int 2x dx = x^2 + C\) （使用公式：\(\int x^n dx = \frac{x^{n+1}}{n+1} + C\)）</p>
+                      <p class="math-formula">\(\int e^x dx = e^x + C\) （使用指数函数积分公式）</p>
+                    </div>
+                    <div class="flex space-x-3">
+                      <button class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors" id="step2-confirm">
+                        确认步骤
+                      </button>
+                      <button class="px-4 py-2 bg-light text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
+                        提示
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <!-- 步骤3 (默认隐藏) -->
+                  <div class="fade-in hidden" id="step3">
+                    <div class="flex items-center mb-3">
+                      <span class="w-6 h-6 rounded-full bg-primary text-white text-sm flex items-center justify-center mr-2">3</span>
+                      <h3 class="font-medium">代入上下限计算</h3>
+                    </div>
+                    <p class="text-gray-500 text-sm mb-3">应用牛顿-莱布尼茨公式 \( \int_{a}^{b} f(x) dx = F(b) - F(a) \)：</p>
+                    <div class="bg-light rounded-lg p-4 mb-3">
+                      <p class="math-formula mb-2">\(\int_{0}^{1} 2x dx = \left[ x^2 \right]_{0}^{1} = 1^2 - 0^2 = 1\)</p>
+                      <p class="math-formula">\(\int_{0}^{1} e^x dx = \left[ e^x \right]_{0}^{1} = e^1 - e^0 = e - 1\)</p>
+                    </div>
+                    <div class="flex space-x-3">
+                      <button class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors" id="step3-confirm">
+                        确认步骤
+                      </button>
+                      <button class="px-4 py-2 bg-light text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
+                        提示
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <!-- 步骤4 (默认隐藏) -->
+                  <div class="fade-in hidden" id="step4">
+                    <div class="flex items-center mb-3">
+                      <span class="w-6 h-6 rounded-full bg-primary text-white text-sm flex items-center justify-center mr-2">4</span>
+                      <h3 class="font-medium">计算最终结果</h3>
+                    </div>
+                    <p class="text-gray-500 text-sm mb-3">将两部分结果相加，得到定积分的最终值：</p>
+                    <div class="bg-light rounded-lg p-4 mb-3">
+                      <p class="math-formula">\(\int_{0}^{1} (2x + e^x) dx = 1 + (e - 1) = e\)</p>
+                      <p class="text-gray-600 text-sm mt-2">（其中 \(e \approx 2.71828\)）</p>
+                    </div>
+                    <div class="flex space-x-3">
+                      <button class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors" id="submit-solution">
+                        提交解答
+                      </button>
+                      <button class="px-4 py-2 bg-light text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
+                        检查答案
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- 解答完成反馈 (默认隐藏) -->
+            <div class="bg-white rounded-xl shadow-sm p-6 hidden" id="solution-feedback">
+              <div class="text-center mb-6">
+                <div class="w-16 h-16 rounded-full bg-success/10 flex items-center justify-center text-success mx-auto mb-4">
+                  <i class="fa fa-check text-2xl"></i>
+                </div>
+                <h2 class="text-2xl font-bold mb-2">解答正确！</h2>
+                <p class="text-gray-500">恭喜你完成了这道定积分题目的解答</p>
+              </div>
+              
+              <div class="border-t border-gray-100 pt-6 mb-6">
+                <h3 class="font-bold mb-3">解答评价</h3>
+                <div class="bg-light rounded-lg p-4 mb-4">
+                  <p class="text-gray-700">你的解答步骤完整正确，准确应用了定积分的线性性质和基本积分公式，计算过程无误。对于指数函数的积分处理尤为恰当。</p>
+                </div>
+                
+                <div class="flex flex-wrap gap-2 mb-4">
+                  <span class="px-3 py-1 bg-success/10 text-success text-xs rounded-full">步骤完整</span>
+                  <span class="px-3 py-1 bg-success/10 text-success text-xs rounded-full">公式应用正确</span>
+                  <span class="px-3 py-1 bg-success/10 text-success text-xs rounded-full">计算准确</span>
+                </div>
+              </div>
+              
+              <div class="flex flex-col sm:flex-row gap-4">
+                <button class="flex-1 px-4 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
+                  继续做下一题
+                </button>
+                <button class="flex-1 px-4 py-3 bg-light text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
+                  查看同类题目
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 右侧：辅助工具和相关题目 -->
+          <div class="space-y-6">
+            <!-- 积分公式参考 -->
+            <div class="bg-white rounded-xl shadow-sm p-6 sticky top-20">
+              <h3 class="text-lg font-bold mb-4 flex items-center">
+                <i class="fa fa-book text-primary mr-2"></i> 常用积分公式
+              </h3>
+              
+              <div class="space-y-4 max-h-96 overflow-y-auto pr-2">
+                <div>
+                  <p class="font-medium mb-1">基本积分公式</p>
+                  <div class="bg-light rounded-lg p-3 text-sm math-formula">
+                    <p class="mb-1">\(\int x^n dx = \frac{x^{n+1}}{n+1} + C\) （\(n \neq -1\)）</p>
+                    <p>\(\int \frac{1}{x} dx = \ln|x| + C\)</p>
+                  </div>
+                </div>
+                
+                <div>
+                  <p class="font-medium mb-1">指数函数积分</p>
+                  <div class="bg-light rounded-lg p-3 text-sm math-formula">
+                    <p class="mb-1">\(\int e^x dx = e^x + C\)</p>
+                    <p>\(\int a^x dx = \frac{a^x}{\ln a} + C\) （\(a > 0, a \neq 1\)）</p>
+                  </div>
+                </div>
+                
+                <div>
+                  <p class="font-medium mb-1">三角函数积分</p>
+                  <div class="bg-light rounded-lg p-3 text-sm math-formula">
+                    <p class="mb-1">\(\int \sin x dx = -\cos x + C\)</p>
+                    <p class="mb-1">\(\int \cos x dx = \sin x + C\)</p>
+                    <p>\(\int \sec^2 x dx = \tan x + C\)</p>
+                  </div>
+                </div>
+                
+                <div>
+                  <p class="font-medium mb-1">定积分性质</p>
+                  <div class="bg-light rounded-lg p-3 text-sm math-formula">
+                    <p class="mb-1">\(\int_{a}^{b} [k_1 f(x) + k_2 g(x)] dx = k_1 \int_{a}^{b} f(x) dx + k_2 \int_{a}^{b} g(x) dx\)</p>
+                    <p>\(\int_{a}^{b} f(x) dx = -\int_{b}^{a} f(x) dx\)</p>
+                    <p>\(\int_{a}^{b} f(x) dx = \int_{a}^{c} f(x) dx + \int_{c}^{b} f(x) dx\)</p>
+                  </div>
+                </div>
+              </div>
+              
+              <button class="w-full mt-4 py-2 text-primary border border-primary rounded-lg hover:bg-primary/5 transition-colors text-sm">
+                查看完整积分表
+              </button>
+            </div>
+            
+            <!-- 相关题目 -->
+            <div class="bg-white rounded-xl shadow-sm p-6">
+              <h3 class="text-lg font-bold mb-4">相关题目</h3>
+              
+              <div class="space-y-4">
+                <a href="#" class="block p-3 border border-gray-100 rounded-lg hover:border-primary hover:bg-primary/5 transition-colors">
+                  <h4 class="font-medium mb-1">定积分换元法应用</h4>
+                  <p class="text-gray-500 text-sm">计算定积分 \(\int_{0}^{\frac{\pi}{2}} \sin^2 x \cos x dx\)，使用换元法求解</p>
+                  <span class="inline-block mt-2 px-2 py-0.5 bg-accent/10 text-accent text-xs rounded-full">中等</span>
+                </a>
+                
+                <a href="#" class="block p-3 border border-gray-100 rounded-lg hover:border-primary hover:bg-primary/5 transition-colors">
+                  <h4 class="font-medium mb-1">分部积分法</h4>
+                  <p class="text-gray-500 text-sm">计算定积分 \(\int_{0}^{1} x e^x dx\)，使用分部积分法求解</p>
+                  <span class="inline-block mt-2 px-2 py-0.5 bg-danger/10 text-danger text-xs rounded-full">困难</span>
+                </a>
+                
+                <a href="#" class="block p-3 border border-gray-100 rounded-lg hover:border-primary hover:bg-primary/5 transition-colors">
+                  <h4 class="font-medium mb-1">定积分几何意义</h4>
+                  <p class="text-gray-500 text-sm">求曲线 \(y = x^2\) 与直线 \(y = x\) 所围成的平面图形的面积</p>
+                  <span class="inline-block mt-2 px-2 py-0.5 bg-accent/10 text-accent text-xs rounded-full">中等</span>
+                </a>
+              </div>
+              
+              <button class="w-full mt-4 py-2 text-primary border border-primary rounded-lg hover:bg-primary/5 transition-colors text-sm">
+                查看更多相关题目
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+  
+  <!-- 页脚 -->
+  <footer class="bg-dark text-white pt-12 pb-6 mt-12">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+        <div>
+          <div class="flex items-center space-x-2 mb-4">
+            <div class="w-10 h-10 rounded-lg gradient-bg flex items-center justify-center">
+              <i class="fa fa-calculator text-white text-xl"></i>
+            </div>
+            <span class="text-xl font-bold">MathMaster</span>
+          </div>
+          <p class="text-gray-400 mb-4">提升数学能力的最佳平台，助你轻松应对各类数学考试</p>
+          <div class="flex space-x-4">
+            <a href="#" class="text-gray-400 hover:text-white transition-colors">
+              <i class="fa fa-github text-xl"></i>
+            </a>
+            <a href="#" class="text-gray-400 hover:text-white transition-colors">
+              <i class="fa fa-twitter text-xl"></i>
+            </a>
+            <a href="#" class="text-gray-400 hover:text-white transition-colors">
+              <i class="fa fa-linkedin text-xl"></i>
+            </a>
+          </div>
+        </div>
+        
+        <div>
+          <h3 class="text-lg font-bold mb-4">功能</h3>
+          <ul class="space-y-2">
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">题库</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">模拟测试</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">学习路径</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">AI 辅导</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h3 class="text-lg font-bold mb-4">资源</h3>
+          <ul class="space-y-2">
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">数学文章</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">视频教程</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">社区讨论</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">常见问题</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h3 class="text-lg font-bold mb-4">联系我们</h3>
+          <ul class="space-y-2">
+            <li class="flex items-center text-gray-400">
+              <i class="fa fa-envelope-o mr-2"></i> contact@quizmaster.com
+            </li>
+            <li class="flex items-center text-gray-400">
+              <i class="fa fa-map-marker mr-2"></i> 辽宁省大连市
+            </li>
+          </ul>
+          <div class="mt-4">
+            <h4 class="font-medium mb-2">订阅更新</h4>
+            <div class="flex">
+              <input type="email" placeholder="你的邮箱" class="px-3 py-2 bg-gray-800 text-white rounded-l-lg focus:outline-none focus:ring-1 focus:ring-primary flex-grow">
+              <button class="bg-primary hover:bg-primary/90 text-white px-3 py-2 rounded-r-lg transition-colors">
+                订阅
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="border-t border-gray-800 pt-6 text-center text-gray-500 text-sm">
+        <p>&copy; 2023 MathMaster. 保留所有权利。</p>
+      </div>
+    </div>
+  </footer>
+  
+  <!-- 交互脚本 -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // 移动端菜单切换
+      const mobileMenuButton = document.getElementById('mobile-menu-button');
+      const mobileMenu = document.getElementById('mobile-menu');
+      
+      mobileMenuButton.addEventListener('click', function() {
+        mobileMenu.classList.toggle('hidden');
+      });
+      
+      // 导航栏滚动效果
+      const navbar = document.getElementById('navbar');
+      window.addEventListener('scroll', function() {
+        if (window.scrollY > 50) {
+          navbar.classList.add('shadow-md');
+          navbar.classList.remove('shadow-sm');
+        } else {
+          navbar.classList.remove('shadow-md');
+          navbar.classList.add('shadow-sm');
+        }
+      });
+      
+      // 解答步骤导航
+      const progressBar = document.querySelector('.absolute.bg-primary');
+      const steps = [
+        document.getElementById('step2'),
+        document.getElementById('step3'),
+        document.getElementById('step4')
+      ];
+      const stepIndicators = document.querySelectorAll('.w-8.h-8.rounded-full');
+      
+      // 步骤1确认
+      document.getElementById('step1-confirm').addEventListener('click', function() {
+        steps[0].classList.remove('hidden');
+        progressBar.style.width = '33%';
+        stepIndicators[0].classList.remove('step-active');
+        stepIndicators[0].classList.add('step-completed');
+        stepIndicators[1].classList.remove('step-pending');
+        stepIndicators[1].classList.add('step-active');
+        
+        // 滚动到步骤2
+        steps[0].scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+      
+      // 步骤2确认
+      document.getElementById('step2-confirm').addEventListener('click', function() {
+        steps[1].classList.remove('hidden');
+        progressBar.style.width = '66%';
+        stepIndicators[1].classList.remove('step-active');
+        stepIndicators[1].classList.add('step-completed');
+        stepIndicators[2].classList.remove('step-pending');
+        stepIndicators[2].classList.add('step-active');
+        
+        // 滚动到步骤3
+        steps[1].scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+      
+      // 步骤3确认
+      document.getElementById('step3-confirm').addEventListener('click', function() {
+        steps[2].classList.remove('hidden');
+        progressBar.style.width = '100%';
+        stepIndicators[2].classList.remove('step-active');
+        stepIndicators[2].classList.add('step-completed');
+        stepIndicators[3].classList.remove('step-pending');
+        stepIndicators[3].classList.add('step-active');
+        
+        // 滚动到步骤4
+        steps[2].scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+      
+      // 提交解答
+      document.getElementById('submit-solution').addEventListener('click', function() {
+        // 隐藏步骤区域，显示反馈
+        document.querySelectorAll('#step2, #step3, #step4').forEach(el => {
+          el.classList.add('hidden');
+        });
+        document.getElementById('solution-feedback').classList.remove('hidden');
+        
+        // 滚动到反馈区域
+        document.getElementById('solution-feedback').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+      
+      // 渲染数学公式
+      if (window.MathJax) {
+        MathJax.typeset();
+      }
+    });
+  </script>
+</body>
+</html>
+<!-- 定积分解答页面中添加 -->
+<div class="mb-6">
+  <a href="question-bank.html" class="text-primary hover:text-primary/80 flex items-center w-fit">
+    <i class="fa fa-angle-left mr-1"></i> 返回题库列表
+  </a>
+</div>
