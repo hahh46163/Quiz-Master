@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <script>
+  (function () {
+    var path = window.location.pathname;
+    var dir;
+    if (path.endsWith('/')) dir = path;
+    else if (/\.html?$/i.test(path)) dir = path.replace(/[^/]+$/, '');
+    else dir = path + '/';
+    var b = document.createElement('base');
+    b.href = dir;
+    var meta = document.head.querySelector('meta[charset]');
+    if (meta) meta.insertAdjacentElement('afterend', b);
+    else document.head.insertBefore(b, document.head.firstChild);
+  })();
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>主页面</title>
+</head>
+<body>
+  <p><a href="index.html">进入 Quiz Master 首页</a> · <a href="index.html#question-bank">直达题库</a></p>
+</body>
+</html>
