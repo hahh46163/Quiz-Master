@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <script>
+  (function () {
+    var path = window.location.pathname;
+    var dir;
+    if (path.endsWith('/')) dir = path;
+    else if (/\.html?$/i.test(path)) dir = path.replace(/[^/]+$/, '');
+    else dir = path + '/';
+    var b = document.createElement('base');
+    b.href = dir;
+    var meta = document.head.querySelector('meta[charset]');
+    if (meta) meta.insertAdjacentElement('afterend', b);
+    else document.head.insertBefore(b, document.head.firstChild);
+  })();
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>概率分布与分位数 - Quiz Master</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#165DFF',
+            secondary: '#36CFC9',
+            accent: '#FF7D00',
+            danger: '#F53F3F',
+            success: '#00B42A',
+            dark: '#1D2129',
+            light: '#F2F3F5'
+          },
+          fontFamily: { inter: ['Inter', 'system-ui', 'sans-serif'] },
+        },
+      }
+    }
+  </script>
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .gradient-bg { background: linear-gradient(135deg, #165DFF 0%, #36CFC9 100%); }
+    }
+  </style>
+  <style>
+    .mm-root { background: linear-gradient(145deg, #4c1d95 0%, #5b21b6 100%); }
+    .mm-branch { background: rgba(148, 163, 184, 0.25); border: 1px solid rgba(148, 163, 184, 0.35); }
+    .mm-leaf { background: rgba(22, 101, 52, 0.45); border: 1px solid rgba(74, 222, 128, 0.35); }
+    .mm-connector { border-color: rgba(125, 211, 252, 0.45); }
+    @keyframes pageEnter { from { opacity: 0; } to { opacity: 1; } }
+    body.page-enter { animation: pageEnter 0.4s ease-out; }
+    body.page-exit { opacity: 0; transition: opacity 0.25s ease; }
+    .math-block { overflow-x: auto; }
+  </style>
+</head>
+<body class="font-inter bg-gray-50 text-dark min-h-screen flex flex-col page-enter">
+  <header id="navbar" class="fixed w-full top-0 z-50 bg-white/90 backdrop-blur-sm shadow-sm">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
+        <div class="flex items-center">
+          <a href="index.html#dashboard" class="flex items-center space-x-2">
+            <div class="w-10 h-10 rounded-lg gradient-bg flex items-center justify-center">
+              <i class="fa fa-calculator text-white text-xl"></i>
+            </div>
+            <span class="text-xl font-bold text-primary">Quiz Master</span>
+          </a>
+        </div>
+        <nav class="hidden md:flex space-x-8">
+          <a href="index.html#dashboard" class="text-dark hover:text-primary font-medium">仪表盘</a>
+          <a href="index.html#question-bank" class="text-primary border-b-2 border-primary font-medium">题库</a>
+          <a href="学习统计.html" class="text-dark hover:text-primary font-medium">学习统计</a>
+          <a href="个人资料.html" class="text-dark hover:text-primary font-medium">个人资料</a>
+        </nav>
+        <button id="mobile-menu-button" class="md:hidden flex items-center justify-center w-10 h-10 rounded-lg bg-light text-dark">
+          <i class="fa fa-bars"></i>
+        </button>
+      </div>
+    </div>
+    <div id="mobile-menu" class="md:hidden hidden bg-white border-t">
+      <div class="container mx-auto px-4 py-3 space-y-2">
+        <a href="index.html#dashboard" class="block py-2">仪表盘</a>
+        <a href="index.html#question-bank" class="block py-2 text-primary font-medium">题库</a>
+        <a href="学习统计.html" class="block py-2">学习统计</a>
+        <a href="个人资料.html" class="block py-2">个人资料</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-grow pt-16">
+    <section class="bg-white border-b">
+      <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <p class="text-sm text-gray-500 mb-1"><a href="index.html#question-bank" class="hover:text-primary">题库</a>
+          <i class="fa fa-angle-right mx-2 text-gray-300"></i> 概率论与数理统计
+        </p>
+        <h1 class="text-3xl font-bold">概率分布与分位数</h1>
+        <p class="text-gray-500 mt-2">基于学习资料与思维导图整理，并补充公式与第三、四阶段计划。</p>
+        <a href="index.html#question-bank" class="inline-flex items-center text-primary text-sm mt-4 hover:text-primary/80">
+          <i class="fa fa-angle-left mr-1"></i> 返回题库
+        </a>
+      </div>
+    </section>
+
+    <!-- 思维导图风格：深色主题 -->
+    <section class="py-10 px-4 bg-slate-950 text-slate-100">
+      <div class="container mx-auto max-w-6xl">
+        <h2 class="text-xl font-bold text-center mb-2 text-sky-200"><i class="fa fa-sitemap mr-2"></i>知识结构（思维导图）</h2>
+        <p class="text-center text-slate-400 text-sm mb-8">主题：概率分布与分位数 · 节点配色示意：主干浅紫灰 / 细节深绿</p>
+
+        <div class="flex flex-col items-center">
+          <div class="mm-root rounded-2xl px-6 py-4 text-center font-bold text-white shadow-lg max-w-md w-full">
+            概率分布与分位数
+          </div>
+          <div class="w-px h-6 mm-connector border-l-2 border-dashed"></div>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-6 mt-2">
+          <!-- 分支1：分位数 -->
+          <div class="rounded-2xl mm-branch p-4 flex flex-col gap-3">
+            <h3 class="font-bold text-sky-200 text-center border-b border-slate-500/50 pb-2">分位数（下侧分位）</h3>
+            <div class="mm-leaf rounded-xl p-3 text-sm">
+              <p class="font-medium text-emerald-200 mb-2">上尾分位数</p>
+              <p class="math-block text-slate-200">\(P(X > x_\alpha) = \alpha\)</p>
+              <p class="mt-2 text-slate-300">与下侧分位数换算（记号依教材）：\(y_\alpha = x_{1-\alpha}\)</p>
+            </div>
+            <div class="mm-leaf rounded-xl p-3 text-sm">
+              <p class="font-medium text-emerald-200 mb-2">中位数</p>
+              <p>\(\alpha = 0.5\)，即 \(x_{0.5}\)</p>
+              <p class="mt-2 text-slate-300">位置特征：约一半观测小于它、一半大于它（连续情形严格各 50% 面积）。</p>
+            </div>
+            <div class="rounded-lg bg-slate-800/80 p-3 text-xs text-slate-400 border border-slate-600/50">
+              <p class="font-medium text-slate-300 mb-1">补充：分位数与分布函数</p>
+              若 \(F\) 为连续严格单调，\(p\) 分位数 \(x_p\) 满足 \(F(x_p)=p\)。上尾 \(\alpha\) 与下侧 \(1-\alpha\) 通过 \(P(X>x_\alpha)=\alpha\) 与 \(F\) 联系。
+            </div>
+          </div>
+
+          <!-- 分支2：常用分布表 -->
+          <div class="rounded-2xl mm-branch p-4 flex flex-col gap-3">
+            <h3 class="font-bold text-sky-200 text-center border-b border-slate-500/50 pb-2">通用分布表</h3>
+            <ul class="space-y-2 text-sm text-slate-200">
+              <li class="mm-leaf rounded-lg px-3 py-2">标准正态：上 \(\alpha\) 分位记 \(u_\alpha\) 或 \(z_\alpha\)</li>
+              <li class="mm-leaf rounded-lg px-3 py-2">卡方分布 \(\chi^2(n)\)</li>
+              <li class="mm-leaf rounded-lg px-3 py-2">\(t\) 分布 \(t(n)\)</li>
+              <li class="mm-leaf rounded-lg px-3 py-2">\(F\) 分布 \(F(n_1,n_2)\)</li>
+            </ul>
+            <div class="rounded-lg bg-slate-800/80 p-3 text-xs text-slate-300 border border-slate-600/50 space-y-2">
+              <p class="font-medium text-slate-200">补充：常见密度（记号）</p>
+              <p>标准正态：\(\varphi(x)=\frac{1}{\sqrt{2\pi}}e^{-x^2/2}\)，\(\Phi(x)=\int_{-\infty}^x\varphi(t)\,dt\)。</p>
+              <p>\(\chi^2(n)\)：\(f(x)\propto x^{n/2-1}e^{-x/2}\,(x>0)\)。</p>
+              <p>\(t(n)\)：\(T=\frac{Z}{\sqrt{\chi^2/n}}\)，\(Z\sim N(0,1)\) 与 \(\chi^2\) 独立。</p>
+              <p>\(F\)：\(F=\frac{\chi_1^2/n_1}{\chi_2^2/n_2}\)（独立卡方比）。</p>
+            </div>
+          </div>
+
+          <!-- 分支3：伽马 -->
+          <div class="rounded-2xl mm-branch p-4 flex flex-col gap-3">
+            <h3 class="font-bold text-sky-200 text-center border-b border-slate-500/50 pb-2">伽马分布</h3>
+            <div class="mm-leaf rounded-xl p-3 text-sm">
+              <p class="font-medium text-emerald-200 mb-2">伽马函数（积分定义）</p>
+              <p class="math-block">\(\displaystyle \Gamma(z)=\int_0^\infty t^{z-1}e^{-t}\,dt,\quad z&gt;0\)</p>
+              <p class="mt-2">递推：\(\Gamma(z+1)=z\,\Gamma(z)\)</p>
+              <p>正整数：\(\Gamma(n+1)=n!\)；特殊值：\(\Gamma(\frac{1}{2})=\sqrt{\pi}\)</p>
+            </div>
+            <div class="mm-leaf rounded-xl p-3 text-sm">
+              <p class="font-medium text-emerald-200 mb-2">伽马分布 \(\Gamma(\alpha,\lambda)\) 常用性质</p>
+              <p>均值：\(\alpha/\lambda\)，方差：\(\alpha/\lambda^2\)</p>
+              <p class="mt-1">可加性：若 \(X_i\sim\Gamma(\alpha_i,\lambda)\) 独立，则 \(\sum X_i\sim\Gamma(\sum\alpha_i,\lambda)\)（同一速率 \(\lambda\)）。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 四阶段学习计划 -->
+    <section class="py-12 bg-gray-50">
+      <div class="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl">
+        <h2 class="text-2xl font-bold mb-2 text-center">系统化学习计划</h2>
+        <p class="text-center text-gray-500 text-sm mb-10">围绕概率论与数理统计中核心分布及其性质，建议按四阶段递进（第三、四阶段为根据课程体系补充）。</p>
+
+        <div class="space-y-8">
+          <article class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-primary">
+            <h3 class="text-lg font-bold text-primary mb-3">第一阶段：分位数的概念与计算</h3>
+            <p class="text-gray-600 text-sm mb-3"><strong>学习目标：</strong>掌握分位数定义，并能结合正态等常用分布进行计算。</p>
+            <p class="text-gray-700 text-sm font-medium mb-2">核心任务：</p>
+            <ol class="list-decimal pl-5 space-y-2 text-sm text-gray-700">
+              <li>区分<strong>上尾分位数</strong>与<strong>下侧（普通）分位数</strong>；掌握“看图找面积、在横轴上读点”的基本方法。</li>
+              <li>标准正态 \(N(0,1)\) 常用分位（如 \(u_{0.975}=1.96\) 等）；一般正态 \(N(\mu,\sigma^2)\) 与标准正态分位关系：\(y_\alpha=\mu+\sigma u_\alpha\)。</li>
+              <li>中位数为 0.5 分位 \(x_{0.5}\)；结合指数分布等练习求中位数，理解“一半在上、一半在下”的含义。</li>
+            </ol>
+          </article>
+
+          <article class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-secondary">
+            <h3 class="text-lg font-bold text-secondary mb-3">第二阶段：伽马函数与伽马分布</h3>
+            <p class="text-gray-600 text-sm mb-3"><strong>学习目标：</strong>巩固伽马分布概念，深入掌握性质与特例。</p>
+            <p class="text-gray-700 text-sm font-medium mb-2">核心任务：</p>
+            <ol class="list-decimal pl-5 space-y-2 text-sm text-gray-700">
+              <li>掌握 \(\Gamma(\alpha)\) 的积分定义及核心性质；熟记 \(\Gamma(\alpha+1)=\alpha\Gamma(\alpha)\)、\(\Gamma(n+1)=n!\)、\(\Gamma(1/2)=\sqrt{\pi}\)。</li>
+              <li>伽马分布与指数分布、卡方分布的联系（如 \(\chi^2(n)\) 可视作 \(\Gamma(n/2,1/2)\)）。</li>
+              <li>利用均值、方差与可加性解决简单概率题。</li>
+            </ol>
+          </article>
+
+          <article class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-accent">
+            <h3 class="text-lg font-bold text-accent mb-3">第三阶段：\(\chi^2\)、\(t\)、\(F\) 分布与抽样分布（补充）</h3>
+            <p class="text-gray-600 text-sm mb-3"><strong>学习目标：</strong>掌握三大抽样分布的定义、典型构造及查表用分位数。</p>
+            <p class="text-gray-700 text-sm font-medium mb-2">核心任务：</p>
+            <ol class="list-decimal pl-5 space-y-2 text-sm text-gray-700">
+              <li><strong>\(\chi^2(n)\)</strong>：独立标准正态平方和；自由度含义；期望 \(n\)、方差 \(2n\)。</li>
+              <li><strong>\(t(n)\)</strong>：定义与正态、卡方的关系；关于 \(t\) 分布表与双侧分位。</li>
+              <li><strong>\(F(n_1,n_2)\)</strong>：两独立卡方（各自除以自由度）之比；与方差比的统计意义。</li>
+              <li>正态总体下 \(\bar X\) 与 \(S^2\) 的分布基础，为区间估计与检验做准备。</li>
+            </ol>
+          </article>
+
+          <article class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-success">
+            <h3 class="text-lg font-bold text-success mb-3">第四阶段：综合应用与巩固（补充）</h3>
+            <p class="text-gray-600 text-sm mb-3"><strong>学习目标：</strong>将分位数与各分布性质用于统计推断的基本题型。</p>
+            <p class="text-gray-700 text-sm font-medium mb-2">核心任务：</p>
+            <ol class="list-decimal pl-5 space-y-2 text-sm text-gray-700">
+              <li>单/双正态总体均值、方差的置信区间与检验统计量的分布识别。</li>
+              <li>给定显著性水平 \(\alpha\)，正确写出拒绝域（会用 \(u\)、\(t\)、\(\chi^2\)、\(F\) 分位数）。</li>
+              <li>综合题：先判分布与自由度，再查表或用软件求分位，规范书写推断结论。</li>
+            </ol>
+          </article>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="bg-dark text-white pt-10 pb-6 mt-8">
+    <div class="container mx-auto px-4 text-center text-gray-500 text-sm">
+      <p>&copy; 2025 Quiz Master. 保留所有权利。</p>
+    </div>
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('mobile-menu-button').addEventListener('click', function() {
+        document.getElementById('mobile-menu').classList.toggle('hidden');
+      });
+      if (window.MathJax && MathJax.typesetPromise) {
+        MathJax.typesetPromise();
+      }
+      document.querySelectorAll('a[href]').forEach(function(a) {
+        a.addEventListener('click', function(e) {
+          var href = a.getAttribute('href');
+          if (!href || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+          if (/^https?:\/\//i.test(href) || href.startsWith('mailto:')) return;
+          if (href === '#' || href === '' || href[0] === '#') return;
+          e.preventDefault();
+          document.body.classList.add('page-exit');
+          setTimeout(function() { window.location.href = href; }, 250);
+        });
+      });
+    });
+  </script>
+</body>
+</html>
